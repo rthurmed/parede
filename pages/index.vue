@@ -1,5 +1,41 @@
 <template>
   <v-row class="flex-row">
+    <v-app-bar
+      flat
+      app
+      color="transparent"
+    >
+      <v-toolbar-title>
+        Parede
+      </v-toolbar-title>
+      <v-spacer />
+      <v-btn
+        icon
+        :disabled="fetching"
+      >
+        <v-icon>
+          mdi-magnify
+        </v-icon>
+      </v-btn>
+      <v-btn
+        icon
+        :disabled="fetching"
+        @click="paginate(-1)"
+      >
+        <v-icon>
+          mdi-chevron-left
+        </v-icon>
+      </v-btn>
+      <v-btn
+        icon
+        :disabled="fetching"
+        @click="paginate(1)"
+      >
+        <v-icon>
+          mdi-chevron-right
+        </v-icon>
+      </v-btn>
+    </v-app-bar>
     <v-col
       v-for="(lane, lk) in lanes"
       :key="lk"
@@ -44,7 +80,8 @@ export default {
       lanes: [],
       cols: 1,
       page: 0,
-      perPage: 48
+      perPage: 32,
+      fetching: true
     }
   },
   watch: {
@@ -54,7 +91,16 @@ export default {
     this.fetch()
   },
   methods: {
+    paginate (d) {
+      this.page += d
+      if (this.page < 0) {
+        this.page = 0
+      }
+      this.fetch()
+    },
     fetch () {
+      this.fetching = true
+
       unsplash.photos.list({
         page: this.page,
         perPage: this.perPage
@@ -62,6 +108,10 @@ export default {
         .then((e) => {
           this.list = e.response.results
           this.buildLanes()
+        })
+        .catch(console.log)
+        .finally(() => {
+          this.fetching = false
         })
     },
     buildLanes () {
