@@ -20,7 +20,7 @@
       <v-btn
         icon
         :disabled="fetching"
-        @click="paginate(-1)"
+        @click="paginate(page - 1)"
       >
         <v-icon>
           mdi-chevron-left
@@ -29,12 +29,20 @@
       <v-btn
         icon
         :disabled="fetching"
-        @click="paginate(1)"
+        @click="paginate(page + 1)"
       >
         <v-icon>
           mdi-chevron-right
         </v-icon>
       </v-btn>
+      <v-text-field
+        solo
+        hide-details
+        :disabled="fetching"
+        :value="page"
+        style="max-width: 3em"
+        @change="e => paginate(e)"
+      />
     </v-app-bar>
     <v-col
       v-for="(lane, lk) in lanes"
@@ -79,7 +87,7 @@ export default {
       list: [],
       lanes: [],
       cols: 1,
-      page: 0,
+      page: Math.floor(Math.random() * 100),
       perPage: 32,
       fetching: true
     }
@@ -91,8 +99,8 @@ export default {
     this.fetch()
   },
   methods: {
-    paginate (d) {
-      this.page += d
+    paginate (p) {
+      this.page = p
       if (this.page < 0) {
         this.page = 0
       }
