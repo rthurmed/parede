@@ -53,6 +53,7 @@
         <v-col
           v-for="i in lane"
           :key="i.id"
+          cols="12"
         >
           <v-card>
             <v-img
