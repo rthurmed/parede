@@ -55,24 +55,7 @@
           :key="i.id"
           cols="12"
         >
-          <v-card>
-            <v-img
-              :src="i.urls.small"
-              :alt="i.alt_description"
-            />
-            <v-list-item two-line>
-              <v-list-item-avatar>
-                <v-avatar>
-                  <v-img :src="i.user.profile_image.small" />
-                </v-avatar>
-              </v-list-item-avatar>
-              <v-list-item-content>
-                <v-list-item-title>
-                  {{ i.user.name }}
-                </v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
-          </v-card>
+          <ImageCard :image="i" />
         </v-col>
       </v-row>
     </v-col>
@@ -81,8 +64,10 @@
 
 <script>
 import { unsplash } from '~/api/unsplash'
+import ImageCard from '~/components/ImageCard'
 
 export default {
+  components: { ImageCard },
   data () {
     return {
       list: [],
