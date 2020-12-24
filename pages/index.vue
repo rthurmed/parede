@@ -44,20 +44,18 @@
         @change="e => paginate(e)"
       />
     </v-app-bar>
-    <v-col
-      v-for="(lane, lk) in lanes"
-      :key="lk"
-      :cols="12 / cols"
-    >
-      <v-row>
-        <v-col
-          v-for="i in lane"
-          :key="i.id"
-          cols="12"
-        >
-          <ImageCard :image="i" />
-        </v-col>
-      </v-row>
+    <v-col cols="12">
+      <Lanes
+        :length="list.length"
+        :cols="cols"
+      >
+        <template v-slot:default="{ index }">
+          <ImageCard
+            :image="list[index]"
+            class="mb-6"
+          />
+        </template>
+      </Lanes>
     </v-col>
   </v-row>
 </template>
@@ -65,21 +63,30 @@
 <script>
 import { unsplash } from '~/api/unsplash'
 import ImageCard from '~/components/ImageCard'
+import Lanes from '~/components/Lanes'
 
 export default {
-  components: { ImageCard },
+  components: { ImageCard, Lanes },
   data () {
     return {
       list: [],
-      lanes: [],
-      cols: 1,
       page: Math.floor(Math.random() * 100),
-      perPage: 32,
+      perPage: 24,
       fetching: true
     }
   },
-  watch: {
-    '$vuetify.breakpoint.name': 'buildLanes'
+  computed: {
+    cols () {
+      let cols = 1
+
+      if (this.$vuetify.breakpoint.xl) {
+        cols = 4
+      } else if (this.$vuetify.breakpoint.mdAndUp) {
+        cols = 3
+      }
+
+      return cols
+    }
   },
   mounted () {
     this.fetch()
@@ -101,39 +108,13 @@ export default {
       })
         .then((e) => {
           this.list = e.response.results
-          this.buildLanes()
         })
-        .catch(console.log)
+        .catch(() => {
+          // TODO catch error
+        })
         .finally(() => {
           this.fetching = false
         })
-    },
-    buildLanes () {
-      let cols = 1
-      let col = 0
-
-      if (this.$vuetify.breakpoint.xl) {
-        cols = 4
-      } else if (this.$vuetify.breakpoint.mdAndUp) {
-        cols = 3
-      }
-
-      const lanes = []
-
-      this.list.forEach((i) => {
-        if (!lanes[col]) {
-          lanes[col] = []
-        }
-        lanes[col].push(i)
-
-        col += 1
-        if (col >= cols) {
-          col = 0
-        }
-      })
-
-      this.lanes = lanes
-      this.cols = cols
     }
   }
 }
