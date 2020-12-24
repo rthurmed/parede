@@ -4,6 +4,7 @@
       :src="image.urls.small"
       :lazy-src="image.urls.thumb"
       :alt="image.alt_description"
+      :aspect-ratio="image.width / image.height"
       @load="loaded = true"
     >
       <template v-slot:placeholder>
