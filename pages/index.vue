@@ -51,11 +51,25 @@
       >
         <template v-slot:default="{ index }">
           <ImageCard
+            v-if="list[index] != null"
             :image="list[index]"
             class="mb-6"
           />
         </template>
       </Lanes>
+      <v-btn
+        v-intersect="{
+          handler: onIntersect,
+          options: {
+            threshold: [0, 0.5, 1.0]
+          }
+        }"
+        text
+        block
+        disabled
+      >
+        Loading...
+      </v-btn>
     </v-col>
   </v-row>
 </template>
@@ -70,9 +84,11 @@ export default {
   data () {
     return {
       list: [],
-      page: Math.floor(Math.random() * 100),
+      mapped: {},
+      page: 0,
       perPage: 24,
-      fetching: true
+      fetching: true,
+      waitingFetch: false
     }
   },
   computed: {
@@ -88,9 +104,9 @@ export default {
       return cols
     }
   },
-  mounted () {
-    this.fetch()
-  },
+  // mounted () {
+  //   this.fetch()
+  // },
   methods: {
     paginate (p) {
       this.page = p
@@ -107,14 +123,25 @@ export default {
         perPage: this.perPage
       })
         .then((e) => {
-          this.list = e.response.results
+          e.response.results.forEach((e) => {
+            this.mapped[e.id] = e
+          })
+          this.list = Object.values(this.mapped)
         })
         .catch(() => {
           // TODO catch error
         })
         .finally(() => {
           this.fetching = false
+          this.waitingFetch = false
         })
+    },
+    onIntersect (entries, observer) {
+      if (!this.waitingFetch && entries[0].intersectionRatio >= 0.1) {
+        this.waitingFetch = true
+        this.page += 1
+        this.fetch()
+      }
     }
   }
 }
