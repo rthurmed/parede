@@ -17,32 +17,6 @@
           mdi-magnify
         </v-icon>
       </v-btn>
-      <v-btn
-        icon
-        :disabled="fetching"
-        @click="paginate(page - 1)"
-      >
-        <v-icon>
-          mdi-chevron-left
-        </v-icon>
-      </v-btn>
-      <v-btn
-        icon
-        :disabled="fetching"
-        @click="paginate(page + 1)"
-      >
-        <v-icon>
-          mdi-chevron-right
-        </v-icon>
-      </v-btn>
-      <v-text-field
-        solo
-        hide-details
-        :disabled="fetching"
-        :value="page"
-        style="max-width: 3em"
-        @change="e => paginate(e)"
-      />
     </v-app-bar>
     <v-col cols="12">
       <Lanes
@@ -104,6 +78,7 @@ export default {
       return cols
     }
   },
+  // Will do this automatically since intersects end
   // mounted () {
   //   this.fetch()
   // },
