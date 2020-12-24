@@ -1,51 +1,88 @@
 <template>
-  <v-row class="flex-row">
+  <v-container class="pt-6">
+    <!-- TOP BAR -->
     <v-app-bar
       flat
       app
-      color="transparent"
+      :color="searching ? '' : 'transparent'"
     >
       <v-toolbar-title>
         Parede
       </v-toolbar-title>
       <v-spacer />
+      <template
+        v-if="searching && $vuetify.breakpoint.mdAndUp"
+      >
+        <v-text-field
+          v-model="query"
+          solo
+          hide-details
+          prepend-inner-icon="mdi-magnify"
+          class="mx-auto mt-10"
+          style="max-width: 30em"
+          autofocus
+        />
+        <v-spacer />
+      </template>
       <v-btn
         icon
         :disabled="fetching"
+        @click="searching = !searching"
       >
-        <v-icon>
+        <v-icon v-if="searching">
+          mdi-close
+        </v-icon>
+        <v-icon v-else>
           mdi-magnify
         </v-icon>
       </v-btn>
-    </v-app-bar>
-    <v-col cols="12">
-      <Lanes
-        :length="list.length"
-        :cols="cols"
+      <template
+        v-if="searching && $vuetify.breakpoint.smAndDown"
+        v-slot:extension
       >
-        <template v-slot:default="{ index }">
-          <ImageCard
-            v-if="list[index] != null"
-            :image="list[index]"
-            class="mb-6"
+        <v-toolbar
+          flat
+          color="transparent"
+          class="mt-6"
+        >
+          <v-text-field
+            v-model="query"
+            solo
+            hide-details
+            prepend-inner-icon="mdi-magnify"
+            class="mx-auto"
+            style="max-width: 30em"
           />
-        </template>
-      </Lanes>
-      <v-btn
-        v-intersect="{
-          handler: onIntersect,
-          options: {
-            threshold: [0, 0.5, 1.0]
-          }
-        }"
-        text
-        block
-        disabled
-      >
-        Loading...
-      </v-btn>
-    </v-col>
-  </v-row>
+        </v-toolbar>
+      </template>
+    </v-app-bar>
+    <!-- CONTENT -->
+    <Lanes
+      :length="list.length"
+      :cols="cols"
+    >
+      <template v-slot:default="{ index }">
+        <ImageCard
+          v-if="list[index] != null"
+          :image="list[index]"
+          class="mb-6"
+        />
+      </template>
+    </Lanes>
+    <v-btn
+      v-intersect="{
+        handler: onIntersect,
+        options: {
+          threshold: [0, 0.5, 1.0]
+        }
+      }"
+      text
+      block
+      disabled
+    >
+      Loading...
+    </v-btn>
+  </v-container>
 </template>
 
 <script>
@@ -61,6 +98,8 @@ export default {
       mapped: {},
       page: 0,
       perPage: 24,
+      searching: true,
+      query: '',
       fetching: true,
       waitingFetch: false
     }
