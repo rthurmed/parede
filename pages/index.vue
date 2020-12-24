@@ -24,6 +24,27 @@
         />
         <v-spacer />
       </template>
+      <template v-if="searching">
+        <v-btn
+          icon
+          @click="latest = !latest"
+        >
+          <v-icon v-if="latest">
+            mdi-sort-clock-ascending
+          </v-icon>
+          <v-icon v-else>
+            mdi-sort-ascending
+          </v-icon>
+        </v-btn>
+        <v-btn
+          icon
+          @click="detailedSearch = !detailedSearch"
+        >
+          <v-icon>
+            mdi-filter
+          </v-icon>
+        </v-btn>
+      </template>
       <v-btn
         icon
         :disabled="fetching"
@@ -56,6 +77,12 @@
         </v-toolbar>
       </template>
     </v-app-bar>
+    <v-expand-transition>
+      <DetailedFilter
+        v-if="searching && detailedSearch"
+        class="mx-auto"
+      />
+    </v-expand-transition>
     <!-- CONTENT -->
     <Lanes
       :length="list.length"
@@ -86,22 +113,33 @@
 </template>
 
 <script>
-import { unsplash } from '~/api/unsplash'
+import { unsplash, colors, orientations } from '~/api/unsplash'
+import DetailedFilter from '~/components/DetailedFilter'
 import ImageCard from '~/components/ImageCard'
 import Lanes from '~/components/Lanes'
 
 export default {
-  components: { ImageCard, Lanes },
+  components: { ImageCard, Lanes, DetailedFilter },
   data () {
     return {
       list: [],
       mapped: {},
+
       page: 0,
       perPage: 24,
-      searching: true,
-      query: '',
+
       fetching: true,
-      waitingFetch: false
+      waitingFetch: false,
+
+      searching: false,
+      detailedSearch: false,
+      colors,
+      orientations,
+
+      query: '',
+      color: '',
+      orientation: '',
+      latest: false
     }
   },
   computed: {
