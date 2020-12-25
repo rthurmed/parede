@@ -4,23 +4,36 @@
     <v-app-bar
       flat
       app
-      :color="searching ? '' : 'transparent'"
+      :color="searchMenuOpened ? '' : 'transparent'"
     >
       <v-toolbar-title>
         Parede
       </v-toolbar-title>
       <v-spacer />
-      <template v-if="searching">
-        <v-text-field
+      <template v-if="searchMenuOpened">
+        <!-- DESKTOP SEARCH FORM -->
+        <v-form
           v-if="$vuetify.breakpoint.mdAndUp"
-          v-model="query"
-          solo
-          hide-details
-          prepend-inner-icon="mdi-magnify"
-          class="mt-10"
-          style="max-width: 30em; margin-left: 72px"
-          autofocus
-        />
+          style="width: 30em; margin-left: 72px"
+          @submit.prevent="search"
+        >
+          <v-text-field
+            v-model="query"
+            solo
+            hide-details
+            prepend-inner-icon="mdi-magnify"
+            autofocus
+            class="mt-10"
+          >
+            <template v-slot:append>
+              <v-btn icon small type="submit">
+                <v-icon>
+                  mdi-chevron-right
+                </v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </v-form>
         <v-spacer />
         <v-btn
           icon
@@ -45,38 +58,45 @@
       <v-btn
         icon
         :disabled="fetching"
-        @click="searching = !searching"
+        @click="searchMenuOpened = !searchMenuOpened"
       >
-        <v-icon v-if="searching">
+        <v-icon v-if="searchMenuOpened">
           mdi-close
         </v-icon>
         <v-icon v-else>
           mdi-magnify
         </v-icon>
       </v-btn>
+      <!-- MOBILE ONLY APP BAR EXTENSION -->
       <template
-        v-if="searching && $vuetify.breakpoint.smAndDown"
+        v-if="searchMenuOpened && $vuetify.breakpoint.smAndDown"
         v-slot:extension
       >
-        <v-toolbar
-          flat
-          color="transparent"
-          class="mt-6"
+        <v-form
+          class="mx-auto mt-6"
+          @submit.prevent="search"
         >
           <v-text-field
             v-model="query"
             solo
             hide-details
             prepend-inner-icon="mdi-magnify"
-            class="mx-auto"
             style="max-width: 30em"
-          />
-        </v-toolbar>
+          >
+            <template v-slot:append>
+              <v-btn icon small type="submit">
+                <v-icon>
+                  mdi-chevron-right
+                </v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </v-form>
       </template>
     </v-app-bar>
     <v-expand-transition>
       <DetailedFilter
-        v-if="searching && detailedSearch"
+        v-if="searchMenuOpened && detailedSearch"
         class="mx-auto"
       />
     </v-expand-transition>
@@ -126,9 +146,10 @@ export default {
       perPage: 24,
 
       fetching: true,
+      searching: false,
       waitingFetch: false,
 
-      searching: false,
+      searchMenuOpened: true,
       detailedSearch: false,
       colors,
       orientations,
@@ -152,11 +173,26 @@ export default {
       return cols
     }
   },
-  // Will do this automatically since intersects end
-  // mounted () {
-  //   this.fetch()
-  // },
+  watch: {
+    searchMenuOpened (e) {
+      if (e === false) {
+        this.searching = false
+
+        // Reset filter values
+        this.query = ''
+
+        this.reset()
+      }
+    }
+  },
+  mounted () {
+    this.fetch()
+  },
   methods: {
+    search () {
+      this.searching = true
+      this.reset()
+    },
     paginate (p) {
       this.page = p
       if (this.page < 0) {
@@ -164,13 +200,22 @@ export default {
       }
       this.fetch()
     },
+    reset () {
+      this.page = 0
+      this.list = []
+      this.mapped = {}
+      this.fetch()
+    },
     fetch () {
       this.fetching = true
 
-      unsplash.photos.list({
-        page: this.page,
-        perPage: this.perPage
-      })
+      // Switch between fetching logics
+      const action = this.searching
+        ? this.fetchSearch()
+        : this.fetchList()
+
+      // Both logics share the same then, catch and finally
+      action
         .then((e) => {
           e.response.results.forEach((e) => {
             this.mapped[e.id] = e
@@ -200,7 +245,7 @@ export default {
       })
     },
     onIntersect (entries, observer) {
-      if (!this.waitingFetch && entries[0].intersectionRatio >= 0.1) {
+      if (!this.waitingFetch && this.list.length > 0 && entries[0].intersectionRatio >= 0.1) {
         this.waitingFetch = true
         this.page += 1
         this.fetch()
