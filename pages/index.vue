@@ -10,21 +10,18 @@
         Parede
       </v-toolbar-title>
       <v-spacer />
-      <template
-        v-if="searching && $vuetify.breakpoint.mdAndUp"
-      >
+      <template v-if="searching">
         <v-text-field
+          v-if="$vuetify.breakpoint.mdAndUp"
           v-model="query"
           solo
           hide-details
           prepend-inner-icon="mdi-magnify"
-          class="mx-auto mt-10"
-          style="max-width: 30em"
+          class="mt-10"
+          style="max-width: 30em; margin-left: 72px"
           autofocus
         />
         <v-spacer />
-      </template>
-      <template v-if="searching">
         <v-btn
           icon
           @click="latest = !latest"
@@ -187,6 +184,20 @@ export default {
           this.fetching = false
           this.waitingFetch = false
         })
+    },
+    fetchList () {
+      return unsplash.photos.list({
+        page: this.page,
+        perPage: this.perPage
+      })
+    },
+    fetchSearch () {
+      return unsplash.search.getPhotos({
+        query: this.query,
+        page: this.page,
+        perPage: this.perPage
+        // TODO add color, orientation & order
+      })
     },
     onIntersect (entries, observer) {
       if (!this.waitingFetch && entries[0].intersectionRatio >= 0.1) {
