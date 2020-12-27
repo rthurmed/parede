@@ -1,18 +1,21 @@
 <template>
   <v-card max-width="300">
     <v-card-text>
-      <v-item-group v-model="color">
+      <v-item-group
+        v-model="color_"
+        @change="e => $emit('update:color', e)"
+      >
         <v-item
           v-for="c in Object.values(colors)"
-          :key="c"
           v-slot="{ active, toggle }"
+          :key="c"
+          :value="c"
         >
           <v-btn
-            :value="c"
             :title="c"
             :input-value="active"
-            class="pa-2"
             icon
+            class="pa-2"
             @click="toggle"
           >
             <v-icon v-if="c == colors.BLACK_AND_WHITE">
@@ -33,17 +36,21 @@
     </v-card-text>
     <v-divider />
     <v-card-text>
-      <v-item-group v-model="orientation">
+      <v-item-group
+        v-model="orientation_"
+        @change="e => $emit('update:orientation', e)"
+      >
         <v-item
           v-for="o in Object.values(orientations)"
-          :key="o"
           v-slot="{ active, toggle }"
+          :key="o"
+          :value="o"
         >
           <v-btn
             :title="o"
             :input-value="active"
-            class="pa-2"
             icon
+            class="pa-2"
             @click="toggle"
           >
             <v-icon v-if="o == orientations.SQUARISH">
@@ -65,12 +72,30 @@
 import { colors, orientations } from '~/api/unsplash'
 
 export default {
+  props: {
+    color: {
+      type: String,
+      default: () => null
+    },
+    orientation: {
+      type: String,
+      default: () => null
+    }
+  },
   data () {
     return {
       colors,
-      color: '',
+      color_: null,
       orientations,
-      orientation: ''
+      orientation_: null
+    }
+  },
+  watch: {
+    color (e) {
+      this.color_ = e
+    },
+    orientation (e) {
+      this.orientation_ = e
     }
   }
 }

@@ -37,7 +37,7 @@
         <v-spacer />
         <v-btn
           icon
-          @click="latest = !latest"
+          @click="latest = !latest; search()"
         >
           <v-icon v-if="latest">
             mdi-sort-clock-ascending
@@ -46,14 +46,32 @@
             mdi-sort-ascending
           </v-icon>
         </v-btn>
-        <v-btn
-          icon
-          @click="detailedSearch = !detailedSearch"
+        <v-menu
+          offset-y
+          :close-delay="300"
+          :close-on-content-click="false"
+          :open-on-hover="$vuetify.breakpoint.mdAndUp"
+          :nudge-bottom="$vuetify.breakpoint.mdAndUp ? 20 : 80"
         >
-          <v-icon>
-            mdi-filter
-          </v-icon>
-        </v-btn>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              icon
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-icon>
+                mdi-filter
+              </v-icon>
+            </v-btn>
+          </template>
+          <DetailedFilter
+            :color.sync="color"
+            :orientation.sync="orientation"
+            class="mx-auto"
+            @update:color="search"
+            @update:orientation="search"
+          />
+        </v-menu>
       </template>
       <v-btn
         icon
@@ -94,12 +112,6 @@
         </v-form>
       </template>
     </v-app-bar>
-    <v-expand-transition>
-      <DetailedFilter
-        v-if="searchMenuOpened && detailedSearch"
-        class="mx-auto"
-      />
-    </v-expand-transition>
     <!-- CONTENT -->
     <Lanes
       :length="list.length"
@@ -155,8 +167,8 @@ export default {
       orientations,
 
       query: '',
-      color: '',
-      orientation: '',
+      color: null,
+      orientation: null,
       latest: false
     }
   },
@@ -191,7 +203,9 @@ export default {
   methods: {
     search () {
       this.searching = true
-      this.reset()
+      if (this.query !== '') {
+        this.reset()
+      }
     },
     paginate (p) {
       this.page = p
@@ -240,8 +254,10 @@ export default {
       return unsplash.search.getPhotos({
         query: this.query,
         page: this.page,
-        perPage: this.perPage
-        // TODO add color, orientation & order
+        perPage: this.perPage,
+        color: this.color,
+        orientation: this.orientation,
+        orderBy: this.latest ? 'latest' : 'relevant'
       })
     },
     onIntersect (entries, observer) {
