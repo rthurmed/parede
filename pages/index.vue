@@ -1,5 +1,9 @@
 <template>
-  <v-container class="pt-6">
+  <v-container
+    :class="{
+      'pt-6': !searching
+    }"
+  >
     <!-- TOP BAR -->
     <v-app-bar
       flat
@@ -113,6 +117,9 @@
       </template>
     </v-app-bar>
     <!-- CONTENT -->
+    <v-banner v-if="searching && !fetching">
+      {{ total }} results
+    </v-banner>
     <Lanes
       :length="list.length"
       :cols="cols"
@@ -126,6 +133,7 @@
       </template>
     </Lanes>
     <v-btn
+      v-if="list.length < total"
       v-intersect="{
         handler: onIntersect,
         options: {
@@ -137,6 +145,20 @@
       disabled
     >
       Loading...
+    </v-btn>
+    <v-btn
+      v-else
+      text
+      block
+      disabled
+    >
+      <v-icon left>
+        square-medium
+      </v-icon>
+      No more results
+      <v-icon right>
+        square-medium
+      </v-icon>
     </v-btn>
   </v-container>
 </template>
@@ -156,6 +178,7 @@ export default {
 
       page: 0,
       perPage: 24,
+      total: 100,
 
       fetching: true,
       searching: false,
@@ -235,6 +258,7 @@ export default {
             this.mapped[e.id] = e
           })
           this.list = Object.values(this.mapped)
+          this.total = e.response.total
         })
         .catch(() => {
           // TODO catch error
