@@ -1,5 +1,16 @@
 # parede
 
+> unsplash image search
+
+## Dependencies
+
+To run this projects an instance of [Unsplash API Proxy](https://github.com/ayltai/unsplash-api-proxy) is needed. To setup the proxy:
+
+```bash
+$ npm install
+$ REACT_APP_UNSPLASH_ACCESS_KEY=your-access-key node app.js
+```
+
 ## Build Setup
 
 ```bash
